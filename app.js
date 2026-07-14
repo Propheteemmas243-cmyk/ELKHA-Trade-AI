@@ -1,8 +1,4 @@
-async function scanMarket(){
-
-
-const signalBox =
-document.getElementById("signal");
+function updateCapital(){
 
 
 const capital =
@@ -13,13 +9,29 @@ const percentage =
 Number(document.getElementById("percentage").value);
 
 
+const target =
+Number(document.getElementById("target").value);
+
+
+const risk =
+Number(document.getElementById("risk").value);
+
+
 
 const tradeAmount =
 capital * percentage /100;
 
 
-const protectedAmount =
-capital - tradeAmount;
+const gain =
+tradeAmount * target /100;
+
+
+const finalAmount =
+tradeAmount + gain;
+
+
+const loss =
+tradeAmount * risk /100;
 
 
 
@@ -27,8 +39,32 @@ document.getElementById("tradeAmount").innerHTML =
 tradeAmount.toFixed(2)+" USDT";
 
 
-document.getElementById("protectedAmount").innerHTML =
-protectedAmount.toFixed(2)+" USDT";
+document.getElementById("targetGain").innerHTML =
+"+"+gain.toFixed(2)+" USDT";
+
+
+document.getElementById("targetTotal").innerHTML =
+finalAmount.toFixed(2)+" USDT";
+
+
+document.getElementById("maxLoss").innerHTML =
+"-"+loss.toFixed(2)+" USDT";
+
+}
+
+
+
+
+
+async function scanMarket(){
+
+
+updateCapital();
+
+
+
+const signalBox =
+document.getElementById("signal");
 
 
 
@@ -63,7 +99,6 @@ await fetch(
 );
 
 
-
 const data =
 await response.json();
 
@@ -77,30 +112,22 @@ let result =
 cryptos.forEach(coin=>{
 
 
-const market =
-data[coin.id];
-
-
 const change =
-market.usd_24h_change;
+data[coin.id].usd_24h_change;
 
 
 
 let score = 50;
 
 
+if(change>5)
+score+=30;
 
-if(change > 5)
-score +=30;
+else if(change>2)
+score+=20;
 
-else if(change >2)
-score +=20;
-
-else if(change < -5)
-score -=30;
-
-else if(change < -2)
-score -=20;
+else if(change<-5)
+score-=30;
 
 
 
@@ -108,51 +135,21 @@ if(score>100)
 score=100;
 
 
-if(score<0)
-score=0;
-
-
-
 let decision;
 
 
-let gainPercent;
+if(score>=80)
+decision="🟢 Configuration intéressante";
 
+else if(score>=60)
+decision="🟡 Attendre confirmation";
 
-
-if(score>=80){
-
-decision="🟢 Opportunité";
-
-gainPercent=2;
-
-}
-
-else if(score>=60){
-
-decision="🟡 Surveillance";
-
-gainPercent=1;
-
-}
-
-else{
-
-decision="🔴 Risque";
-
-gainPercent=0;
-
-}
-
-
-
-let estimatedGain =
-tradeAmount * gainPercent /100;
+else
+decision="🔴 Risque élevé";
 
 
 
 result += `
-
 
 <b>${coin.name}</b><br>
 
@@ -162,24 +159,9 @@ ${change.toFixed(2)}%<br>
 Score ELKHA :
 ${score}/100<br>
 
-Décision :
-${decision}<br>
-
-
-💰 Capital engagé :
-${tradeAmount.toFixed(2)} USDT<br>
-
-
-📈 Gain estimé :
-+${estimatedGain.toFixed(2)} USDT
-
-
-<br>
-
-------------------
+${decision}
 
 <br><br>
-
 
 `;
 
@@ -197,13 +179,8 @@ signalBox.innerHTML=result;
 
 catch(error){
 
-
-signalBox.innerHTML =
-"⚠️ Erreur de connexion";
-
-
-console.log(error);
-
+signalBox.innerHTML=
+"⚠️ Erreur marché";
 
 }
 
