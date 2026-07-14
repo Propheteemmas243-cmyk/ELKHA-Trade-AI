@@ -1,42 +1,42 @@
 function updateCapital(){
 
 
-const capital =
+let capital =
 Number(document.getElementById("capital").value);
 
 
-const percentage =
+let percentage =
 Number(document.getElementById("percentage").value);
 
 
-const target =
+let target =
 Number(document.getElementById("target").value);
 
 
-const risk =
+let risk =
 Number(document.getElementById("risk").value);
 
 
 
-const tradeAmount =
-capital * percentage /100;
+let trade =
+capital * percentage / 100;
 
 
-const gain =
-tradeAmount * target /100;
+let gain =
+trade * target / 100;
 
 
-const finalAmount =
-tradeAmount + gain;
+let total =
+trade + gain;
 
 
-const loss =
-tradeAmount * risk /100;
+let loss =
+trade * risk / 100;
 
 
 
 document.getElementById("tradeAmount").innerHTML =
-tradeAmount.toFixed(2)+" USDT";
+trade.toFixed(2)+" USDT";
 
 
 document.getElementById("targetGain").innerHTML =
@@ -44,7 +44,7 @@ document.getElementById("targetGain").innerHTML =
 
 
 document.getElementById("targetTotal").innerHTML =
-finalAmount.toFixed(2)+" USDT";
+total.toFixed(2)+" USDT";
 
 
 document.getElementById("maxLoss").innerHTML =
@@ -62,44 +62,23 @@ async function scanMarket(){
 updateCapital();
 
 
-
-const signalBox =
+let box =
 document.getElementById("signal");
 
 
-
-signalBox.innerHTML =
-"🧠 ELKHA analyse les marchés...";
-
-
-
-const cryptos=[
-
-{id:"bitcoin",name:"BTC/USDT"},
-{id:"ethereum",name:"ETH/USDT"},
-{id:"solana",name:"SOL/USDT"},
-{id:"binancecoin",name:"BNB/USDT"},
-{id:"ripple",name:"XRP/USDT"}
-
-];
+box.innerHTML =
+"🧠 ELKHA CORE analyse...";
 
 
 
-const ids =
-cryptos.map(c=>c.id).join(",");
-
-
-
-try{
-
-
-const response =
+let response =
 await fetch(
-`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd&include_24hr_change=true"
 );
 
 
-const data =
+
+let data =
 await response.json();
 
 
@@ -109,61 +88,51 @@ let result =
 
 
 
-cryptos.forEach(coin=>{
+let coins = [
+
+["bitcoin","BTC/USDT"],
+["ethereum","ETH/USDT"],
+["solana","SOL/USDT"],
+["binancecoin","BNB/USDT"],
+["ripple","XRP/USDT"]
+
+];
 
 
-const change =
-data[coin.id].usd_24h_change;
 
+coins.forEach(c=>{
+
+
+let coin =
+data[c[0]];
+
+
+let change =
+coin.usd_24h_change;
 
 
 let score = 50;
 
 
-if(change>5)
-score+=30;
+if(change > 2){
 
-else if(change>2)
-score+=20;
+score += 30;
 
-else if(change<-5)
-score-=30;
+}
 
+if(change < -2){
 
+score -= 20;
 
-if(score>100)
-score=100;
+}
 
 
-let decision;
+result +=
 
-
-if(score>=80)
-decision="🟢 Configuration intéressante";
-
-else if(score>=60)
-decision="🟡 Attendre confirmation";
-
-else
-decision="🔴 Risque élevé";
-
-
-
-result += `
-
-<b>${coin.name}</b><br>
-
-Variation :
-${change.toFixed(2)}%<br>
-
-Score ELKHA :
-${score}/100<br>
-
-${decision}
-
-<br><br>
-
-`;
+"<b>"+c[1]+"</b><br>"+
+"Prix : "+coin.usd+"$<br>"+
+"Variation : "+change.toFixed(2)+"%<br>"+
+"Score ELKHA : "+score+"/100<br><br>";
 
 
 
@@ -171,18 +140,15 @@ ${decision}
 
 
 
-signalBox.innerHTML=result;
+box.innerHTML=result;
 
 
 
 }
 
-catch(error){
-
-signalBox.innerHTML=
-"⚠️ Erreur marché";
-
-}
 
 
-}
+
+
+document.getElementById("scanButton").onclick =
+scanMarket;
