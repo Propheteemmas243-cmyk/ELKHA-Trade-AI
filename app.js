@@ -12,7 +12,10 @@ const percentage = Number(document.getElementById("percentage").value || 100);
 
 const tradeCapital = capital * percentage / 100;
 
-const protectedCapital = capital - tradeCapital;
+const targetGain = tradeCapital * 0.10;
+
+const maxLoss = tradeCapital * 0.03;
+
 
 
 if(document.getElementById("tradeAmount")){
@@ -23,18 +26,18 @@ tradeCapital.toFixed(2)+" USDT";
 
 if(document.getElementById("protectedAmount")){
 document.getElementById("protectedAmount").innerHTML =
-protectedCapital.toFixed(2)+" USDT";
+(capital-tradeCapital).toFixed(2)+" USDT";
 }
 
 
 
 const cryptos = [
 
-{id:"bitcoin", name:"BTC/USDT"},
-{id:"ethereum", name:"ETH/USDT"},
-{id:"solana", name:"SOL/USDT"},
-{id:"binancecoin", name:"BNB/USDT"},
-{id:"ripple", name:"XRP/USDT"}
+{id:"bitcoin",name:"BTC/USDT"},
+{id:"ethereum",name:"ETH/USDT"},
+{id:"solana",name:"SOL/USDT"},
+{id:"binancecoin",name:"BNB/USDT"},
+{id:"ripple",name:"XRP/USDT"}
 
 ];
 
@@ -48,7 +51,9 @@ try{
 
 
 const response = await fetch(
+
 `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+
 );
 
 
@@ -56,7 +61,7 @@ const data = await response.json();
 
 
 
-let result = 
+let result =
 "🧠 ELKHA STRATEGY REPORT<br><br>";
 
 
@@ -64,9 +69,12 @@ let result =
 cryptos.forEach(coin=>{
 
 
-const price = data[coin.id].usd;
+const price =
+data[coin.id].usd;
 
-const change = data[coin.id].usd_24h_change;
+
+const change =
+data[coin.id].usd_24h_change;
 
 
 
@@ -98,9 +106,9 @@ score -= 30;
 
 }
 
-else if(change < -2){
+else if(change < 0){
 
-score -= 20;
+score -= 15;
 
 }
 
@@ -130,9 +138,10 @@ trend = "📉 Baissière";
 
 let risk;
 
+
 if(Math.abs(change) > 5){
 
-risk = "⚠️ Élevé";
+risk = "🔴 Élevé";
 
 }
 
@@ -153,38 +162,25 @@ risk = "🟢 Faible";
 let decision;
 
 
-if(score >= 80){
 
-decision = "🟢 Configuration intéressante";
+if(score >= 80 && risk !== "🔴 Élevé"){
+
+decision =
+"🟢 CONFIGURATION INTÉRESSANTE";
 
 }
 
 else if(score >= 60){
 
-decision = "🟡 Attendre confirmation";
+decision =
+"🟡 ATTENDRE CONFIRMATION";
 
 }
 
 else{
 
-decision = "🔴 Éviter";
-
-}
-
-
-
-let targetGain = 0;
-
-
-if(score >= 80){
-
-targetGain = tradeCapital * 0.10;
-
-}
-
-else if(score >= 60){
-
-targetGain = tradeCapital * 0.05;
+decision =
+"🔴 ÉVITER";
 
 }
 
@@ -193,35 +189,53 @@ targetGain = tradeCapital * 0.05;
 result += `
 
 
-<b>${coin.name}</b><br>
+<b>${coin.name}</b><br><br>
+
 
 💵 Prix :
 ${price}$<br>
 
+
 📊 Variation 24h :
 ${change.toFixed(2)}%<br>
 
-${trend}<br>
+
+${trend}<br><br>
+
 
 🧠 Score ELKHA :
 ${score}/100<br>
 
+
 ⚠️ Risque :
-${risk}<br>
+${risk}<br><br>
+
 
 🎯 Décision :
-${decision}<br>
+${decision}<br><br>
 
-💰 Gain simulé :
-+${targetGain.toFixed(2)} USDT
+
+💰 Capital engagé :
+${tradeCapital.toFixed(2)} USDT<br>
+
+
+🎯 Objectif simulé :
++${targetGain.toFixed(2)} USDT<br>
+
+
+🛡 Protection :
+-${maxLoss.toFixed(2)} USDT
 
 
 <br>
 
---------------------<br><br>
+--------------------
+
+<br><br>
 
 
 `;
+
 
 
 });
