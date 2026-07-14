@@ -1,74 +1,72 @@
-console.log("ELKHA VERSION NOUVELLE CHARGEE");
-
-
 async function scanMarket(){
 
+const box = document.getElementById("signal");
 
-let signal =
-document.getElementById("signal");
-
-
-signal.innerHTML =
-"🧠 ELKHA analyse en cours...";
+box.innerHTML = "🧠 ELKHA CORE analyse le marché...";
 
 
+const capital = Number(document.getElementById("capital").value || 100);
 
-let capital =
-Number(document.getElementById("capital").value);
-
-
-
-let percentage =
-Number(document.getElementById("percentage").value);
+const percentage = Number(document.getElementById("percentage").value || 100);
 
 
+const tradeCapital = capital * percentage / 100;
 
-let trade =
-capital * percentage /100;
+const protectedCapital = capital - tradeCapital;
 
 
-
+if(document.getElementById("tradeAmount")){
 document.getElementById("tradeAmount").innerHTML =
-trade.toFixed(2)+" USDT";
+tradeCapital.toFixed(2)+" USDT";
+}
+
+
+if(document.getElementById("protectedAmount")){
+document.getElementById("protectedAmount").innerHTML =
+protectedCapital.toFixed(2)+" USDT";
+}
 
 
 
-let response =
-await fetch(
-"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true"
-);
+const cryptos = [
 
-
-
-let data =
-await response.json();
-
-
-
-let result =
-"🧠 ELKHA MARKET REPORT<br><br>";
-
-
-
-let coins = [
-
-["bitcoin","BTC/USDT"],
-["ethereum","ETH/USDT"],
-["solana","SOL/USDT"]
+{id:"bitcoin", name:"BTC/USDT"},
+{id:"ethereum", name:"ETH/USDT"},
+{id:"solana", name:"SOL/USDT"},
+{id:"binancecoin", name:"BNB/USDT"},
+{id:"ripple", name:"XRP/USDT"}
 
 ];
 
 
 
-coins.forEach(c=>{
+const ids = cryptos.map(c=>c.id).join(",");
 
 
-let price =
-data[c[0]].usd;
+
+try{
 
 
-let variation =
-data[c[0]].usd_24h_change;
+const response = await fetch(
+`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+);
+
+
+const data = await response.json();
+
+
+
+let result = 
+"🧠 ELKHA STRATEGY REPORT<br><br>";
+
+
+
+cryptos.forEach(coin=>{
+
+
+const price = data[coin.id].usd;
+
+const change = data[coin.id].usd_24h_change;
 
 
 
@@ -76,16 +74,77 @@ let score = 50;
 
 
 
-if(variation > 2){
+if(change > 5){
 
-score = 80;
+score += 30;
+
+}
+
+else if(change > 2){
+
+score += 20;
+
+}
+
+else if(change > 0){
+
+score += 10;
+
+}
+
+else if(change < -5){
+
+score -= 30;
+
+}
+
+else if(change < -2){
+
+score -= 20;
 
 }
 
 
-if(variation < -2){
 
-score = 30;
+if(score > 100) score = 100;
+
+if(score < 0) score = 0;
+
+
+
+let trend;
+
+if(change > 0){
+
+trend = "📈 Haussière";
+
+}
+
+else{
+
+trend = "📉 Baissière";
+
+}
+
+
+
+let risk;
+
+if(Math.abs(change) > 5){
+
+risk = "⚠️ Élevé";
+
+}
+
+else if(Math.abs(change) > 2){
+
+risk = "🟡 Modéré";
+
+}
+
+else{
+
+risk = "🟢 Faible";
 
 }
 
@@ -94,24 +153,38 @@ score = 30;
 let decision;
 
 
-if(score >=80){
+if(score >= 80){
 
-decision =
-"🟢 SIGNAL ACHAT POSSIBLE";
+decision = "🟢 Configuration intéressante";
 
 }
 
-else if(score >=50){
+else if(score >= 60){
 
-decision =
-"🟡 SURVEILLER";
+decision = "🟡 Attendre confirmation";
 
 }
 
 else{
 
-decision =
-"🔴 ÉVITER";
+decision = "🔴 Éviter";
+
+}
+
+
+
+let targetGain = 0;
+
+
+if(score >= 80){
+
+targetGain = tradeCapital * 0.10;
+
+}
+
+else if(score >= 60){
+
+targetGain = tradeCapital * 0.05;
 
 }
 
@@ -119,43 +192,57 @@ decision =
 
 result += `
 
-<b>${c[1]}</b><br>
 
-Prix : ${price}$<br>
+<b>${coin.name}</b><br>
 
-Variation : ${variation.toFixed(2)}%<br>
+💵 Prix :
+${price}$<br>
 
-Score ELKHA : ${score}/100<br>
+📊 Variation 24h :
+${change.toFixed(2)}%<br>
 
-Décision : ${decision}
+${trend}<br>
 
-<br><br>
+🧠 Score ELKHA :
+${score}/100<br>
+
+⚠️ Risque :
+${risk}<br>
+
+🎯 Décision :
+${decision}<br>
+
+💰 Gain simulé :
++${targetGain.toFixed(2)} USDT
+
+
+<br>
+
+--------------------<br><br>
+
 
 `;
-
 
 
 });
 
 
 
-signal.innerHTML =
-result;
+box.innerHTML = result;
 
 
 
 }
 
 
+catch(error){
 
-document.addEventListener(
-"DOMContentLoaded",
-function(){
+box.innerHTML =
+"⚠️ Erreur de connexion au marché";
 
+console.log(error);
 
-document.getElementById("scanButton").onclick =
-scanMarket;
+}
 
 
 }
-);
