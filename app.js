@@ -1,144 +1,211 @@
-async function scanMarket() {
+async function scanMarket(){
 
-    const signalBox = document.getElementById("signal");
 
-    signalBox.innerHTML = "🧠 ELKHA CORE analyse les marchés...";
+const signalBox =
+document.getElementById("signal");
 
 
-    const cryptos = [
-        { id: "bitcoin", name: "BTC/USDT" },
-        { id: "ethereum", name: "ETH/USDT" },
-        { id: "solana", name: "SOL/USDT" },
-        { id: "binancecoin", name: "BNB/USDT" },
-        { id: "ripple", name: "XRP/USDT" }
-    ];
+const capital =
+Number(document.getElementById("capital").value);
 
 
-    const ids = cryptos.map(c => c.id).join(",");
+const percentage =
+Number(document.getElementById("percentage").value);
 
 
-    try {
 
-        const response = await fetch(
-            `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
-        );
+const tradeAmount =
+capital * percentage /100;
 
 
-        const data = await response.json();
+const protectedAmount =
+capital - tradeAmount;
 
 
-        let result = `
-        🧠 ELKHA MARKET ANALYSIS<br><br>
-        `;
 
+document.getElementById("tradeAmount").innerHTML =
+tradeAmount.toFixed(2)+" USDT";
 
-        cryptos.forEach(coin => {
 
+document.getElementById("protectedAmount").innerHTML =
+protectedAmount.toFixed(2)+" USDT";
 
-            const market = data[coin.id];
 
-            const price = market.usd;
 
-            const change = market.usd_24h_change;
+signalBox.innerHTML =
+"🧠 ELKHA analyse les marchés...";
 
 
-            // Calcul du Score ELKHA
 
-            let score = 50;
+const cryptos=[
 
+{id:"bitcoin",name:"BTC/USDT"},
+{id:"ethereum",name:"ETH/USDT"},
+{id:"solana",name:"SOL/USDT"},
+{id:"binancecoin",name:"BNB/USDT"},
+{id:"ripple",name:"XRP/USDT"}
 
-            // Analyse momentum
-            if(change > 5){
-                score += 25;
-            }
-            else if(change > 2){
-                score += 15;
-            }
-            else if(change < -5){
-                score -= 25;
-            }
-            else if(change < -2){
-                score -= 15;
-            }
+];
 
 
-            // Analyse stabilité
-            if(Math.abs(change) < 3){
-                score += 10;
-            }
 
+const ids =
+cryptos.map(c=>c.id).join(",");
 
-            // Limite du score
-            if(score > 100){
-                score = 100;
-            }
 
-            if(score < 0){
-                score = 0;
-            }
 
+try{
 
 
-            let decision;
+const response =
+await fetch(
+`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+);
 
 
-            if(score >= 80){
 
-                decision = "🟢 Opportunité intéressante";
+const data =
+await response.json();
 
-            }
-            else if(score >= 60){
 
-                decision = "🟡 Surveillance";
 
-            }
-            else {
+let result =
+"🧠 ELKHA MARKET SCAN<br><br>";
 
-                decision = "🔴 Risque élevé";
 
-            }
 
+cryptos.forEach(coin=>{
 
 
-            result += `
+const market =
+data[coin.id];
 
-            <b>${coin.name}</b><br>
 
-            Prix :
-            ${price}$<br>
+const change =
+market.usd_24h_change;
 
-            Variation 24h :
-            ${change.toFixed(2)}%<br>
 
-            🧠 Score ELKHA :
-            ${score}/100<br>
 
-            Décision :
-            ${decision}<br>
+let score = 50;
 
-            --------------------<br><br>
 
-            `;
 
+if(change > 5)
+score +=30;
 
-        });
+else if(change >2)
+score +=20;
 
+else if(change < -5)
+score -=30;
 
+else if(change < -2)
+score -=20;
 
-        signalBox.innerHTML = result;
 
 
+if(score>100)
+score=100;
 
-    } catch(error){
 
+if(score<0)
+score=0;
 
-        signalBox.innerHTML =
-        "⚠️ Impossible d'analyser le marché";
 
 
-        console.log(error);
+let decision;
 
 
-    }
+let gainPercent;
+
+
+
+if(score>=80){
+
+decision="🟢 Opportunité";
+
+gainPercent=2;
+
+}
+
+else if(score>=60){
+
+decision="🟡 Surveillance";
+
+gainPercent=1;
+
+}
+
+else{
+
+decision="🔴 Risque";
+
+gainPercent=0;
+
+}
+
+
+
+let estimatedGain =
+tradeAmount * gainPercent /100;
+
+
+
+result += `
+
+
+<b>${coin.name}</b><br>
+
+Variation :
+${change.toFixed(2)}%<br>
+
+Score ELKHA :
+${score}/100<br>
+
+Décision :
+${decision}<br>
+
+
+💰 Capital engagé :
+${tradeAmount.toFixed(2)} USDT<br>
+
+
+📈 Gain estimé :
++${estimatedGain.toFixed(2)} USDT
+
+
+<br>
+
+------------------
+
+<br><br>
+
+
+`;
+
+
+
+});
+
+
+
+signalBox.innerHTML=result;
+
+
+
+}
+
+catch(error){
+
+
+signalBox.innerHTML =
+"⚠️ Erreur de connexion";
+
+
+console.log(error);
+
+
+}
+
 
 }
