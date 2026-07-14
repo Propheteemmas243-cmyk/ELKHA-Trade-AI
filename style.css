@@ -1,1 +1,83 @@
+body {
+    background: #050505;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
 
+
+header {
+    text-align: center;
+    color: #d4af37;
+    margin-bottom: 30px;
+}
+
+
+header h1 {
+    font-size: 32px;
+}
+
+
+.card {
+    background: #111111;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(212,175,55,0.15);
+}
+
+
+.card h2 {
+    color: #d4af37;
+}
+
+
+.active {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+
+.profit {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+
+li {
+    background: #1a1a1a;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+}
+
+
+button {
+    background: #d4af37;
+    color: black;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+button:hover {
+    opacity: 0.8;
+}
+
+
+footer {
+    text-align: center;
+    color: #777;
+    margin-top: 30px;
+}
