@@ -2,76 +2,92 @@ async function scanMarket() {
 
     const signalBox = document.getElementById("signal");
 
-    signalBox.innerHTML = "🧠 ELKHA CORE analyse le marché...";
+    signalBox.innerHTML = "🧠 ELKHA CORE analyse le marché en temps réel...";
 
 
     const cryptos = [
-        "bitcoin",
-        "ethereum",
-        "solana",
-        "binancecoin",
-        "ripple"
+        {
+            id: "bitcoin",
+            name: "BTC/USDT"
+        },
+        {
+            id: "ethereum",
+            name: "ETH/USDT"
+        },
+        {
+            id: "solana",
+            name: "SOL/USDT"
+        },
+        {
+            id: "binancecoin",
+            name: "BNB/USDT"
+        },
+        {
+            id: "ripple",
+            name: "XRP/USDT"
+        }
     ];
+
+
+    const ids = cryptos.map(coin => coin.id).join(",");
 
 
     try {
 
         const response = await fetch(
-            "https://api.coingecko.com/api/v3/simple/price?ids=" 
-            + cryptos.join(",") +
-            "&vs_currencies=usd&include_24hr_change=true"
+            `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
         );
 
 
         const data = await response.json();
 
 
-        let result = "🧠 ELKHA MARKET SCAN<br><br>";
+        let result = `
+        🧠 ELKHA MARKET SCAN<br><br>
+        `;
 
 
-        cryptos.forEach((crypto)=>{
+        cryptos.forEach(coin => {
 
-            let coin = data[crypto];
+            const market = data[coin.id];
 
-            let price = coin.usd;
+            const price = market.usd;
 
-            let change = coin.usd_24h_change.toFixed(2);
+            const change = market.usd_24h_change.toFixed(2);
 
 
             let trend;
-
             let score;
 
 
-            if(change > 2){
+            if (change > 2) {
 
                 trend = "📈 HAUSSIÈRE";
 
-                score = 80 + Math.floor(Math.random()*15);
+                score = 85;
 
-            } 
-            else if(change < -2){
+            } else if (change < -2) {
 
                 trend = "📉 BAISSIÈRE";
 
-                score = 40 + Math.floor(Math.random()*20);
+                score = 45;
 
-            } 
-            else {
+            } else {
 
                 trend = "⏸ STABLE";
 
-                score = 60 + Math.floor(Math.random()*15);
+                score = 65;
 
             }
 
 
             result += `
-            <b>${crypto.toUpperCase()}</b><br>
+            <b>${coin.name}</b><br>
             Prix : ${price}$<br>
             Variation 24h : ${change}%<br>
             Tendance : ${trend}<br>
-            Score ELKHA : ${score}/100<br><br>
+            Score ELKHA : ${score}/100<br>
+            --------------------<br><br>
             `;
 
 
@@ -81,10 +97,10 @@ async function scanMarket() {
         signalBox.innerHTML = result;
 
 
-    } catch(error){
+    } catch(error) {
 
         signalBox.innerHTML =
-        "⚠️ Erreur de connexion au marché";
+        "⚠️ Impossible de récupérer les données du marché";
 
         console.log(error);
 
