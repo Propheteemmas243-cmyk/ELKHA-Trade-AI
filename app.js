@@ -6,16 +6,11 @@ box.innerHTML = "🧠 ELKHA CORE analyse le marché...";
 
 
 const capital = Number(document.getElementById("capital").value || 100);
-
 const percentage = Number(document.getElementById("percentage").value || 100);
 
 
 const tradeCapital = capital * percentage / 100;
-
-const targetGain = tradeCapital * 0.10;
-
-const maxLoss = tradeCapital * 0.03;
-
+const protectedCapital = capital - tradeCapital;
 
 
 if(document.getElementById("tradeAmount")){
@@ -26,34 +21,13 @@ tradeCapital.toFixed(2)+" USDT";
 
 if(document.getElementById("protectedAmount")){
 document.getElementById("protectedAmount").innerHTML =
-(capital-tradeCapital).toFixed(2)+" USDT";
+protectedCapital.toFixed(2)+" USDT";
 }
 
 
 
-const cryptos = [
-
-{id:"bitcoin",name:"BTC/USDT"},
-{id:"ethereum",name:"ETH/USDT"},
-{id:"solana",name:"SOL/USDT"},
-{id:"binancecoin",name:"BNB/USDT"},
-{id:"ripple",name:"XRP/USDT"}
-
-];
-
-
-
-const ids = cryptos.map(c=>c.id).join(",");
-
-
-
-try{
-
-
 const response = await fetch(
-
-`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
-
+"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd&include_24hr_change=true"
 );
 
 
@@ -61,100 +35,61 @@ const data = await response.json();
 
 
 
-let result =
-"🧠 ELKHA STRATEGY REPORT<br><br>";
+let result = `
+🧠 ELKHA STRATEGY REPORT<br><br>
+`;
 
 
 
-cryptos.forEach(coin=>{
+const coins = [
+["bitcoin","BTC/USDT"],
+["ethereum","ETH/USDT"],
+["solana","SOL/USDT"],
+["binancecoin","BNB/USDT"],
+["ripple","XRP/USDT"]
+];
 
 
-const price =
-data[coin.id].usd;
+
+coins.forEach(coin=>{
 
 
-const change =
-data[coin.id].usd_24h_change;
+let price = data[coin[0]].usd;
+let change = data[coin[0]].usd_24h_change;
 
 
 
 let score = 50;
 
 
-
 if(change > 5){
-
-score += 30;
-
+score = 85;
 }
-
 else if(change > 2){
-
-score += 20;
-
+score = 75;
 }
-
 else if(change > 0){
-
-score += 10;
-
+score = 65;
 }
-
-else if(change < -5){
-
-score -= 30;
-
-}
-
-else if(change < 0){
-
-score -= 15;
-
-}
-
-
-
-if(score > 100) score = 100;
-
-if(score < 0) score = 0;
-
-
-
-let trend;
-
-if(change > 0){
-
-trend = "📈 Haussière";
-
-}
-
 else{
-
-trend = "📉 Baissière";
-
+score = 40;
 }
 
+
+
+let trend = change >=0 ? "📈 Haussière" : "📉 Baissière";
 
 
 let risk;
 
-
-if(Math.abs(change) > 5){
-
-risk = "🔴 Élevé";
-
+if(Math.abs(change)>5){
+risk="🔴 Élevé";
 }
-
-else if(Math.abs(change) > 2){
-
-risk = "🟡 Modéré";
-
+else if(Math.abs(change)>2){
+risk="🟡 Modéré";
 }
-
 else{
-
-risk = "🟢 Faible";
-
+risk="🟢 Faible";
 }
 
 
@@ -162,77 +97,55 @@ risk = "🟢 Faible";
 let decision;
 
 
-
-if(score >= 80 && risk !== "🔴 Élevé"){
-
-decision =
-"🟢 CONFIGURATION INTÉRESSANTE";
-
+if(score>=80){
+decision="🟢 CONFIGURATION INTÉRESSANTE";
 }
-
-else if(score >= 60){
-
-decision =
-"🟡 ATTENDRE CONFIRMATION";
-
+else if(score>=60){
+decision="🟡 ATTENDRE CONFIRMATION";
 }
-
 else{
-
-decision =
-"🔴 ÉVITER";
-
+decision="🔴 ÉVITER";
 }
+
+
+
+let gain = tradeCapital * 0.10;
+let loss = tradeCapital * 0.03;
 
 
 
 result += `
 
-
-<b>${coin.name}</b><br><br>
-
+<b>${coin[1]}</b><br>
 
 💵 Prix :
 ${price}$<br>
 
-
-📊 Variation 24h :
+📊 Variation :
 ${change.toFixed(2)}%<br>
 
-
-${trend}<br><br>
-
+${trend}<br>
 
 🧠 Score ELKHA :
 ${score}/100<br>
 
-
 ⚠️ Risque :
-${risk}<br><br>
-
+${risk}<br>
 
 🎯 Décision :
-${decision}<br><br>
+${decision}<br>
 
-
-💰 Capital engagé :
-${tradeCapital.toFixed(2)} USDT<br>
-
-
-🎯 Objectif simulé :
-+${targetGain.toFixed(2)} USDT<br>
-
+💰 Gain simulé :
++${gain.toFixed(2)} USDT<br>
 
 🛡 Protection :
--${maxLoss.toFixed(2)} USDT
-
+-${loss.toFixed(2)} USDT
 
 <br>
 
 --------------------
 
 <br><br>
-
 
 `;
 
@@ -242,21 +155,7 @@ ${tradeCapital.toFixed(2)} USDT<br>
 
 
 
-box.innerHTML = result;
-
-
-
-}
-
-
-catch(error){
-
-box.innerHTML =
-"⚠️ Erreur de connexion au marché";
-
-console.log(error);
-
-}
+box.innerHTML=result;
 
 
 }
