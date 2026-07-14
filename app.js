@@ -1,138 +1,214 @@
-function updateCapital(){
-
-
-let capital =
-Number(document.getElementById("capital").value);
-
-
-let percentage =
-Number(document.getElementById("percentage").value);
-
-
-let target =
-Number(document.getElementById("target").value);
-
-
-let risk =
-Number(document.getElementById("risk").value);
-
-
-
-let trade =
-capital * percentage / 100;
-
-
-let gain =
-trade * target / 100;
-
-
-let total =
-trade + gain;
-
-
-let loss =
-trade * risk / 100;
-
-
-
-document.getElementById("tradeAmount").innerHTML =
-trade.toFixed(2)+" USDT";
-
-
-document.getElementById("targetGain").innerHTML =
-"+"+gain.toFixed(2)+" USDT";
-
-
-document.getElementById("targetTotal").innerHTML =
-total.toFixed(2)+" USDT";
-
-
-document.getElementById("maxLoss").innerHTML =
-"-"+loss.toFixed(2)+" USDT";
-
-}
-
-
-
-
-
 async function scanMarket(){
 
 
-updateCapital();
-
-
-let box =
-document.getElementById("signal");
+const box = document.getElementById("signal");
 
 
 box.innerHTML =
-"🧠 ELKHA CORE analyse...";
+"🧠 ELKHA STRATEGY ENGINE analyse...";
 
 
 
-let response =
-await fetch(
-"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd&include_24hr_change=true"
-);
+const capital =
+Number(document.getElementById("capital").value);
 
 
 
-let data =
-await response.json();
+const percentage =
+Number(document.getElementById("percentage").value);
 
 
 
-let result =
-"🧠 ELKHA MARKET SCAN<br><br>";
+const tradeCapital =
+capital * percentage / 100;
 
 
 
-let coins = [
+const cryptos = [
 
-["bitcoin","BTC/USDT"],
-["ethereum","ETH/USDT"],
-["solana","SOL/USDT"],
-["binancecoin","BNB/USDT"],
-["ripple","XRP/USDT"]
+{id:"bitcoin",name:"BTC/USDT"},
+{id:"ethereum",name:"ETH/USDT"},
+{id:"solana",name:"SOL/USDT"},
+{id:"binancecoin",name:"BNB/USDT"},
+{id:"ripple",name:"XRP/USDT"}
 
 ];
 
 
 
-coins.forEach(c=>{
+const ids =
+cryptos.map(c=>c.id).join(",");
 
 
-let coin =
-data[c[0]];
+
+try{
 
 
-let change =
-coin.usd_24h_change;
+const response =
+await fetch(
+`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+);
+
+
+
+const data =
+await response.json();
+
+
+
+let result =
+"🧠 ELKHA STRATEGY REPORT<br><br>";
+
+
+
+cryptos.forEach(coin=>{
+
+
+const market =
+data[coin.id];
+
+
+const price =
+market.usd;
+
+
+const change =
+market.usd_24h_change;
+
 
 
 let score = 50;
 
 
-if(change > 2){
+
+if(change > 5){
 
 score += 30;
 
 }
 
-if(change < -2){
+else if(change > 2){
+
+score += 20;
+
+}
+
+else if(change < -5){
+
+score -= 30;
+
+}
+
+else if(change < -2){
 
 score -= 20;
 
 }
 
 
-result +=
 
-"<b>"+c[1]+"</b><br>"+
-"Prix : "+coin.usd+"$<br>"+
-"Variation : "+change.toFixed(2)+"%<br>"+
-"Score ELKHA : "+score+"/100<br><br>";
+if(score > 100)
+score = 100;
+
+
+if(score < 0)
+score = 0;
+
+
+
+let decision;
+
+let target;
+
+
+if(score >= 80){
+
+decision =
+"🟢 SIGNAL ACHAT POSSIBLE";
+
+target =
+"Objectif +10%";
+
+}
+
+
+else if(score >=60){
+
+decision =
+"🟡 ATTENDRE CONFIRMATION";
+
+target =
+"Objectif +5%";
+
+}
+
+
+else{
+
+decision =
+"🔴 ÉVITER";
+
+target =
+"Pas de trade";
+
+}
+
+
+
+
+let possibleGain = 0;
+
+
+if(score>=80){
+
+possibleGain =
+tradeCapital * 0.10;
+
+}
+
+else if(score>=60){
+
+possibleGain =
+tradeCapital * 0.05;
+
+}
+
+
+
+
+result += `
+
+
+<b>${coin.name}</b><br>
+
+Prix :
+${price}$<br>
+
+
+Variation :
+${change.toFixed(2)}%<br>
+
+
+🧠 Score ELKHA :
+${score}/100<br>
+
+
+Décision :
+${decision}<br>
+
+
+🎯 Plan :
+${target}<br>
+
+
+💰 Gain simulé :
++${possibleGain.toFixed(2)} USDT<br>
+
+
+--------------------<br><br>
+
+
+`;
 
 
 
@@ -147,8 +223,13 @@ box.innerHTML=result;
 }
 
 
+catch(error){
 
 
+box.innerHTML =
+"⚠️ Erreur d'analyse marché";
 
-document.getElementById("scanButton").onclick =
-scanMarket;
+
+}
+
+}
